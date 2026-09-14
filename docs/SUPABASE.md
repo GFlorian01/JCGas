@@ -3,7 +3,7 @@
 ## 1. Crear el proyecto
 
 1. Crea un proyecto de Supabase en la región más cercana al equipo.
-2. En **SQL Editor**, ejecuta la migración `supabase/migrations/202609140001_initial_schema.sql`.
+2. Aplica las migraciones en orden: `supabase/migrations/202609140001_initial_schema.sql` y `supabase/migrations/202609140002_create_quotation.sql`. La segunda incorpora el guardado transaccional de clientes, sedes, cotizaciones y partidas.
 3. En **Authentication > Providers**, habilita **Google**. Configura el Client ID y Client Secret de Google OAuth y agrega estas URL de redirección:
    - `http://localhost:3000/auth/callback`
    - `https://TU-PROYECTO.vercel.app/auth/callback`
@@ -24,3 +24,7 @@ Las invitaciones son de acceso, no de correo: por ahora el administrador compart
 No existe una garantía honesta de “nunca” perder información con solo un servicio gratuito. En Supabase Free no hay backups descargables gestionados y un proyecto con poca actividad puede pausarse. Mantén copias externas periódicas de base de datos y de archivos antes de usar datos reales. Supabase recomienda exportar periódicamente los proyectos Free con CLI y guardar el resultado fuera de Supabase.
 
 Antes del uso operativo, define una cuenta de respaldo externa y automatiza una exportación al menos diaria. Si el dato es crítico, migra a Supabase Pro para backups diarios, sin pausa por inactividad y una retención definida.
+
+## 4. Carga histórica
+
+Sigue [CARGA_INICIAL.md](./CARGA_INICIAL.md) para convertir los documentos existentes en registros validados. Los archivos originales no se almacenan todavía en Supabase.
