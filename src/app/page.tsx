@@ -1,9 +1,10 @@
 import { Workspace } from "@/components/workspace";
 import { createClient } from "@/lib/supabase/server";
 
-type TeamRow = { id: string; name: string; role: string };
+type TeamRow = { id: string; name: string; role: "admin" | "coordinator" | "operator" | "reviewer" | "viewer" };
 type ClientRow = { id: string; team_id: string; business_name: string };
 type LocationRow = { id: string; team_id: string; client_id: string; name: string };
+type MemberRow = { user_id: string; full_name: string | null; email: string; role: "admin" | "coordinator" | "operator" | "reviewer" | "viewer"; joined_at: string };
 type QuotationRow = { id: string; team_id: string; quotation_code: string; quotation_date: string; status: "draft" | "sent" | "approved" | "rejected" | "expired"; total_amount: number; clients: { business_name: string } | null; service_locations: { name: string } | null };
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ team?: string }> }) {
@@ -15,6 +16,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ t
   if (teamsError) throw new Error(`No se pudieron cargar los equipos: ${teamsError.message}`);
   const teams = (membershipData ?? []) as TeamRow[];
   const teamIds = teams.map((team) => team.id);
+  const memberResults = await Promise.all(teams.map(async (team) => ({ teamId: team.id, result: await supabase.rpc("get_team_members", { target_team: team.id }) })));
+  const members = memberResults.flatMap(({ teamId, result }) => ((result.data ?? []) as MemberRow[]).map((member) => ({ ...member, team_id: teamId })));
   const [clientResult, locationResult, quotationResult] = teamIds.length ? await Promise.all([
     supabase.from("clients").select("id, team_id, business_name").in("team_id", teamIds).eq("active", true).order("business_name"),
     supabase.from("service_locations").select("id, team_id, client_id, name").in("team_id", teamIds).eq("active", true).order("name"),
@@ -22,5 +25,5 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ t
   ]) : [{ data: [] }, { data: [] }, { data: [] }];
   const quotations = ((quotationResult.data ?? []) as unknown as QuotationRow[]).map((row) => ({ ...row, total_amount: Number(row.total_amount), client_name: row.clients?.business_name ?? "Cliente eliminado", location_name: row.service_locations?.name ?? "Ubicación eliminada" }));
   const userName = user.user_metadata.full_name ?? user.user_metadata.name ?? user.email?.split("@")[0] ?? "Usuario";
-  return <Workspace userName={userName} initialTeamId={requestedTeamId} teams={teams} clients={(clientResult.data ?? []) as ClientRow[]} locations={(locationResult.data ?? []) as LocationRow[]} quotations={quotations} />;
+  return <Workspace userName={userName} initialTeamId={requestedTeamId} teams={teams} members={members} clients={(clientResult.data ?? []) as ClientRow[]} locations={(locationResult.data ?? []) as LocationRow[]} quotations={quotations} />;
 }

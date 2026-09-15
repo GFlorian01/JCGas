@@ -31,3 +31,17 @@ export async function removeFromTeam(teamId: string, userId: string) {
   if (error) throw new Error(error.message);
   revalidatePath("/");
 }
+
+export async function changeMemberRole(teamId: string, userId: string, role: "admin" | "coordinator" | "operator" | "reviewer" | "viewer") {
+  const supabase = await requireUser();
+  const { error } = await supabase.rpc("update_team_member_role", { target_team: teamId, target_user: userId, new_role: role });
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+}
+
+export async function renameTeam(teamId: string, name: string) {
+  const supabase = await requireUser();
+  const { error } = await supabase.rpc("rename_team", { target_team: teamId, new_name: name });
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+}
