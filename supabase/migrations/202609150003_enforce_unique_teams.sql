@@ -1,5 +1,31 @@
 -- Keep the earliest duplicate team for each owner/name pair. These duplicates
 -- were created during initial setup and have no operational data.
+do $$
+begin
+  if exists (
+    with ranked as (
+      select id, row_number() over (
+        partition by created_by, lower(btrim(name))
+        order by created_at, id
+      ) as position
+      from public.teams
+    )
+    select 1
+    from ranked r
+    where r.position > 1
+      and (
+        exists (select 1 from public.team_invitations i where i.team_id = r.id)
+        or exists (select 1 from public.clients c where c.team_id = r.id)
+        or exists (select 1 from public.service_locations l where l.team_id = r.id)
+        or exists (select 1 from public.quotations q where q.team_id = r.id)
+        or exists (select 1 from public.quotation_versions v where v.team_id = r.id)
+      )
+  ) then
+    raise exception 'Hay equipos duplicados con datos operativos; revísalos antes de ejecutar esta limpieza';
+  end if;
+end;
+$$;
+
 with ranked as (
   select id, row_number() over (
     partition by created_by, lower(btrim(name))
