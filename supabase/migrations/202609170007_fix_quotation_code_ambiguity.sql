@@ -66,8 +66,8 @@ begin
   select coalesce(max((substring(q.quotation_code from '[0-9]+$'))::integer), 0) + 1
     into next_number
     from public.quotations q
-    where q.team_id = target_team and q.quotation_code like format('COT-%s-%%', extract(year from quotation_date)::integer);
-  quotation_code := format('COT-%s-%s', extract(year from quotation_date)::integer, lpad(next_number::text, 4, '0'));
+    where q.team_id = target_team and q.quotation_code like format('COT-%s-%%', extract(year from create_quotation.quotation_date)::integer);
+  quotation_code := format('COT-%s-%s', extract(year from create_quotation.quotation_date)::integer, lpad(next_number::text, 4, '0'));
   tax_amount := round(subtotal * 0.18, 2);
 
   insert into public.quotations (team_id, quotation_code, client_id, service_location_id, quotation_date, valid_until, service_type, service_description, subtotal, tax_amount, total_amount, created_by, updated_by)
