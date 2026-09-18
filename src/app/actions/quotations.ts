@@ -65,3 +65,13 @@ export async function createQuotation(input: unknown) {
     return { error: error instanceof Error ? error.message : "No fue posible guardar la cotización." };
   }
 }
+
+export async function updateQuotation(input: unknown) {
+  try {
+    const values = quotationSchema.extend({ quotationId: z.string().uuid(), status: z.enum(["draft", "sent", "approved", "rejected", "expired"]), statusComment: z.string().max(500).optional().default("") }).parse(input);
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("update_quotation_record", { target_quotation: values.quotationId, new_client_name: values.clientName, new_location_name: values.locationName, new_address: values.address, new_quotation_date: values.quotationDate, new_valid_until: values.validUntil || null, new_service_type: values.serviceType, new_service_description: values.serviceDescription, new_status: values.status, new_items: values.items.map((item) => ({ description: item.description, quantity: item.quantity, unit_price: item.price })), status_comment: values.statusComment });
+    if (error) return { error: error.message };
+    revalidatePath("/"); return { success: true };
+  } catch (error) { return { error: error instanceof Error ? error.message : "No fue posible actualizar la cotización." }; }
+}
