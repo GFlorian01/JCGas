@@ -20,9 +20,9 @@ export async function importHistoricalQuotations(teamId: string): Promise<{ impo
   let imported = 0;
   let skipped = 0;
   for (const quotation of historicalQuotations) {
-    const { data: existing, error: lookupError } = await supabase.from("quotations").select("id").eq("team_id", teamId).eq("quotation_date", quotation.date).eq("service_type", quotation.serviceType).limit(1);
+    const { data: existing, error: lookupError } = await supabase.rpc("historical_quotation_exists", { target_team: teamId, target_date: quotation.date, target_service_type: quotation.serviceType });
     if (lookupError) return { imported, skipped, error: `No se pudo verificar ${quotation.source}: ${lookupError.message}` };
-    if (existing?.length) { skipped++; continue; }
+    if (existing) { skipped++; continue; }
     const { error } = await supabase.rpc("create_quotation", { target_team: teamId, client_name: quotation.clientName, client_ruc: "", client_contact_name: "", client_contact_email: "", client_contact_phone: "", location_name: quotation.locationName, location_address: quotation.address, location_district: "", location_province: "", location_department: "", location_latitude: null, location_longitude: null, quotation_date: quotation.date, quotation_valid_until: null, quotation_service_type: quotation.serviceType, quotation_service_description: `Importada desde ${quotation.source}. Datos transcritos del documento original.`, quotation_items: quotation.items.map((item) => ({ description: item.description, quantity: item.quantity, unit_price: item.price })) });
     if (error) return { imported, skipped, error: `${quotation.source}: ${error.message}` };
     imported++;
