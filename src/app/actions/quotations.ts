@@ -11,7 +11,7 @@ const quotationSchema = z.object({
   contactName: z.string().trim().max(200).optional().default(""),
   contactEmail: z.string().trim().email().or(z.literal("")),
   contactPhone: z.string().trim().max(40).optional().default(""),
-  locationName: z.string().trim().min(2).max(200),
+  locationName: z.string().trim().max(200).optional().default(""),
   address: z.string().trim().max(300).optional().default(""),
   district: z.string().trim().max(100).optional().default(""),
   province: z.string().trim().max(100).optional().default(""),
@@ -20,7 +20,7 @@ const quotationSchema = z.object({
   quotationDate: z.string().date(),
   validUntil: z.string().date().or(z.literal("")),
   serviceType: z.string().trim().min(2).max(200),
-  serviceDescription: z.string().trim().min(3).max(5000),
+  serviceDescription: z.string().trim().max(5000).optional().default(""),
   items: z.array(z.object({ description: z.string().trim().min(3).max(500), quantity: z.number().positive(), price: z.number().min(0) })).min(1),
 });
 
@@ -45,7 +45,7 @@ export async function createQuotation(input: unknown) {
       client_contact_name: values.contactName,
       client_contact_email: values.contactEmail,
       client_contact_phone: values.contactPhone,
-      location_name: values.locationName,
+      location_name: values.locationName || values.address,
       location_address: values.address,
       location_district: values.district,
       location_province: values.province,
@@ -70,7 +70,7 @@ export async function updateQuotation(input: unknown) {
   try {
     const values = quotationSchema.extend({ quotationId: z.string().uuid(), status: z.enum(["draft", "sent", "approved", "rejected", "expired"]), statusComment: z.string().max(500).optional().default("") }).parse(input);
     const supabase = await createClient();
-    const { error } = await supabase.rpc("update_quotation_record", { target_quotation: values.quotationId, new_client_name: values.clientName, new_location_name: values.locationName, new_address: values.address, new_quotation_date: values.quotationDate, new_valid_until: values.validUntil || null, new_service_type: values.serviceType, new_service_description: values.serviceDescription, new_status: values.status, new_items: values.items.map((item) => ({ description: item.description, quantity: item.quantity, unit_price: item.price })), status_comment: values.statusComment });
+    const { error } = await supabase.rpc("update_quotation_record", { target_quotation: values.quotationId, new_client_name: values.clientName, new_location_name: values.locationName || values.address, new_address: values.address, new_quotation_date: values.quotationDate, new_valid_until: values.validUntil || null, new_service_type: values.serviceType, new_service_description: values.serviceDescription, new_status: values.status, new_items: values.items.map((item) => ({ description: item.description, quantity: item.quantity, unit_price: item.price })), status_comment: values.statusComment });
     if (error) return { error: error.message };
     revalidatePath("/"); return { success: true };
   } catch (error) { return { error: error instanceof Error ? error.message : "No fue posible actualizar la cotización." }; }
