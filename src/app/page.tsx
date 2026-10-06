@@ -13,6 +13,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ t
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
+  await supabase.rpc("accept_pending_invitations"); // joins the user to teams that invited their email; ignored if the migration is not applied yet
   const { data: membershipData, error: teamsError } = await supabase.rpc("get_my_teams");
   if (teamsError) throw new Error(`No se pudieron cargar los equipos: ${teamsError.message}`);
   const teams = (membershipData ?? []) as TeamRow[];
@@ -26,6 +27,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ t
     supabase.rpc("get_my_quotation_details"),
   ]) : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
   const quotations = ((quotationResult.data ?? []) as QuotationRow[]).map((row) => ({ ...row, total_amount: Number(row.total_amount) }));
+  const { data: canCreate, error: canCreateError } = teamIds.length ? { data: false, error: null } : await supabase.rpc("can_create_team");
   const userName = user.user_metadata.full_name ?? user.user_metadata.name ?? user.email?.split("@")[0] ?? "Usuario";
-  return <Workspace userName={userName} initialTeamId={requestedTeamId} teams={teams} members={members} clients={(clientResult.data ?? []) as ClientRow[]} locations={(locationResult.data ?? []) as LocationRow[]} quotations={quotations} details={(detailResult.data ?? []) as DetailRow[]} />;
+  return <Workspace userName={userName} userEmail={user.email ?? ""} canCreateTeam={canCreateError ? true : canCreate === true} initialTeamId={requestedTeamId} teams={teams} members={members} clients={(clientResult.data ?? []) as ClientRow[]} locations={(locationResult.data ?? []) as LocationRow[]} quotations={quotations} details={(detailResult.data ?? []) as DetailRow[]} />;
 }

@@ -44,3 +44,8 @@ th{background:#f8faf9;padding:11px 10px}td{padding:14px 10px}.table-wrap{padding
 .status{display:inline-flex;align-items:center;gap:6px;padding:4px 10px}.status:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
 @media(max-width:850px){.metrics.spaced,.insight-grid,.map-card{width:calc(100% - 44px)}.place{grid-template-columns:1fr auto}.place-bar{grid-column:1/-1;grid-row:2}}
 @media(max-width:560px){.metrics.spaced,.insight-grid,.map-card{width:calc(100% - 32px)}.metric{padding:16px}}
+/* Access control UI */
+.plain-fieldset{border:0;margin:0;padding:0;min-width:0}.plain-fieldset:disabled input,.plain-fieldset:disabled select,.plain-fieldset:disabled textarea{background:#f4f7f6;color:#6e7d7a;cursor:not-allowed}.plain-fieldset:disabled button{display:none}
+.signout{margin-left:auto;border:1px solid #44776d;background:transparent;color:#bfd1cc;border-radius:6px;padding:5px 9px;font-size:11px}.signout:hover{background:#24564c;color:#fff}
+.login-card .secondary.full-button{margin-top:12px}.login-card input{width:100%;margin-bottom:4px}
+@media(max-width:850px){.sidebar-bottom{flex-direction:column;gap:8px}.signout{margin:0;padding:4px 6px;font-size:10px}}
