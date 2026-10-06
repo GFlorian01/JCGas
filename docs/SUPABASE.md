@@ -17,7 +17,7 @@ La clave `service_role` no se necesita en este primer flujo y no debe publicarse
 
 El primer usuario que entre con una cuenta `@gmail.com` queda registrado automáticamente. Desde la aplicación se invoca `create_team(nombre)` para crear el primer equipo; su creador será administrador. Los administradores generan enlaces de invitación de siete días mediante `create_team_invitation` y pueden expulsar integrantes con `remove_team_member`.
 
-Las invitaciones son de acceso, no de correo: por ahora el administrador comparte el enlace seguro por el canal que prefiera. Para envío automático hay que conectar un SMTP o servicio transaccional antes de usarlo con personas externas.
+Al pulsar "Enviar invitación" se crea la invitación y se envía un correo al invitado con el enlace. El remitente es la cuenta Gmail definida en `GMAIL_USER` (con una contraseña de aplicación en `GMAIL_APP_PASSWORD`, requiere verificación en dos pasos); el administrador que invita aparece como nombre del remitente y en "Responder a". Si el correo falla, la invitación igualmente se crea y la pantalla muestra el enlace para compartirlo a mano. Gmail permite unos 500 envíos al día.
 
 ## 3. Conservación de datos
 
