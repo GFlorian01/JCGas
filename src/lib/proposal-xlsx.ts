@@ -21,21 +21,20 @@ export async function proposalXlsx(d: ProposalData, logo: ArrayBuffer) {
     views: [{ showGridLines: false }],
     pageSetup: { paperSize: 9, fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left: .5, right: .5, top: .6, bottom: .6, header: .3, footer: .3 } },
   });
-  ws.columns = [{ width: 62 }, { width: 9 }, { width: 9 }, { width: 17 }, { width: 17 }];
+  ws.columns = [{ width: 3 }, { width: 62 }, { width: 9 }, { width: 9 }, { width: 17 }, { width: 17 }];
   const line = (text: string, opts: Partial<ExcelJS.Style> = {}, height?: number) => {
-    const row = ws.addRow([text]);
-    ws.mergeCells(row.number, 1, row.number, 5);
-    row.getCell(1).style = { alignment: { vertical: "middle", wrapText: true }, ...opts };
+    const row = ws.addRow([null, text]);
+    ws.mergeCells(row.number, 2, row.number, 6);
+    row.getCell(2).style = { alignment: { vertical: "middle", wrapText: true }, ...opts };
     if (height) row.height = height;
     return row;
   };
 
-  const head = ws.addRow(["JC GAS", "PROPUESTA TÉCNICA ECONÓMICA"]);
+  const head = ws.addRow([null, "JC GAS"]);
   head.height = 56;
-  ws.mergeCells(head.number, 2, head.number, 5);
-  head.getCell(1).style = { font: { bold: true, size: 12 }, alignment: { vertical: "middle", horizontal: "left", indent: 8 } };
-  head.getCell(2).style = { font: { bold: true, size: 15 }, alignment: { vertical: "middle", horizontal: "center" } };
-  ws.addImage(wb.addImage({ buffer: logo, extension: "png" }), { tl: { col: 0.1, row: 0.1 }, ext: { width: 64, height: 64 } });
+  head.getCell(2).style = { font: { bold: true, size: 12 }, alignment: { vertical: "middle", horizontal: "left", indent: 8 } };
+  ws.addImage(wb.addImage({ buffer: logo, extension: "png" }), { tl: { col: 1.1, row: 0.1 }, ext: { width: 64, height: 64 } });
+  line("PROPUESTA TÉCNICA ECONÓMICA", { font: { bold: true, size: 15 }, alignment: { vertical: "middle", horizontal: "center" } }, 30);
 
   line("", {}, 6);
   const date = new Date(d.date + "T00:00:00").toLocaleDateString("es-PE");
@@ -45,42 +44,42 @@ export async function proposalXlsx(d: ProposalData, logo: ArrayBuffer) {
   line("", {}, 8);
   line("PROPUESTA ECONÓMICA", { font: { bold: true } }, 20);
 
-  const header = ws.addRow(["DESCRIPCIÓN", "CANT.", "UND", "PRECIO UNITARIO", "PARCIAL"]);
+  const header = ws.addRow([null, "DESCRIPCIÓN", "CANT.", "UND", "PRECIO UNITARIO", "PARCIAL"]);
   header.height = 30;
   header.eachCell((c) => { c.fill = blue; c.border = box; c.font = { bold: true }; c.alignment = { horizontal: "center", vertical: "middle", wrapText: true }; });
 
   const first = header.number + 1;
   d.items.forEach((i) => {
-    const row = ws.addRow([i.description || "Sin descripción", i.quantity, 1, i.price, null]);
-    row.getCell(5).value = { formula: `B${row.number}*D${row.number}`, result: i.quantity * i.price };
+    const row = ws.addRow([null, i.description || "Sin descripción", i.quantity, 1, i.price, null]);
+    row.getCell(6).value = { formula: `C${row.number}*E${row.number}`, result: i.quantity * i.price };
     row.height = Math.max(20, Math.ceil((i.description.length || 1) / 68) * 15 + 5);
     row.eachCell((c, n) => {
       c.border = box;
-      c.alignment = { vertical: "middle", wrapText: n === 1, horizontal: n === 1 ? "left" : n < 4 ? "center" : "right" };
+      c.alignment = { vertical: "middle", wrapText: n === 2, horizontal: n === 2 ? "left" : n < 5 ? "center" : "right" };
     });
-    row.getCell(4).numFmt = money;
     row.getCell(5).numFmt = money;
+    row.getCell(6).numFmt = money;
   });
   const last = first + d.items.length - 1;
 
   const subtotal = d.items.reduce((a, i) => a + i.quantity * i.price, 0);
   const totals: [string, string, number][] = [
-    ["TOTAL SIN IGV (S/.)", `SUM(E${first}:E${last})`, subtotal],
-    ["IGV (S/.)", `E${last + 1}*0.18`, subtotal * 0.18],
-    ["TOTAL CON IGV (S/.)", `E${last + 1}+E${last + 2}`, subtotal * 1.18],
+    ["TOTAL SIN IGV (S/.)", `SUM(F${first}:F${last})`, subtotal],
+    ["IGV (S/.)", `F${last + 1}*0.18`, subtotal * 0.18],
+    ["TOTAL CON IGV (S/.)", `F${last + 1}+F${last + 2}`, subtotal * 1.18],
   ];
   totals.forEach(([label, formula, result], n) => {
-    const row = ws.addRow([label, null, null, null, { formula, result }]);
-    ws.mergeCells(row.number, 1, row.number, 4);
+    const row = ws.addRow([null, label, null, null, null, { formula, result }]);
+    ws.mergeCells(row.number, 2, row.number, 5);
     row.height = n === 2 ? 26 : 20;
-    [1, 5].forEach((c) => {
+    [2, 6].forEach((c) => {
       const cell = row.getCell(c);
       cell.fill = blue;
       cell.border = box;
       cell.font = { bold: n === 2 };
-      cell.alignment = { vertical: "middle", horizontal: "right", indent: c === 1 ? 1 : 0 };
+      cell.alignment = { vertical: "middle", horizontal: "right", indent: c === 2 ? 1 : 0 };
     });
-    row.getCell(5).numFmt = money;
+    row.getCell(6).numFmt = money;
   });
 
   line("", {}, 24);
