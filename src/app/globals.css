@@ -49,3 +49,5 @@ th{background:#f8faf9;padding:11px 10px}td{padding:14px 10px}.table-wrap{padding
 .signout{margin-left:auto;border:1px solid #44776d;background:transparent;color:#bfd1cc;border-radius:6px;padding:5px 9px;font-size:11px}.signout:hover{background:#24564c;color:#fff}
 .login-card .secondary.full-button{margin-top:12px}.login-card input{width:100%;margin-bottom:4px}
 @media(max-width:850px){.sidebar-bottom{flex-direction:column;gap:8px}.signout{margin:0;padding:4px 6px;font-size:10px}}
+
+.proposal-preview{overflow:auto}
