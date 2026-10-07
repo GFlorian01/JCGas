@@ -5,7 +5,7 @@ type TeamRow = { id: string; name: string; role: "admin" | "coordinator" | "oper
 type ClientRow = { id: string; team_id: string; business_name: string };
 type LocationRow = { id: string; team_id: string; client_id: string; name: string };
 type MemberRow = { user_id: string; full_name: string | null; email: string; role: "admin" | "coordinator" | "operator" | "reviewer" | "viewer"; joined_at: string };
-type QuotationRow = { id: string; team_id: string; quotation_code: string; quotation_date: string; status: "draft" | "sent" | "approved" | "rejected" | "expired"; total_amount: number; client_name: string; location_name: string };
+type QuotationRow = { id: string; team_id: string; quotation_code: string; quotation_date: string; status: "draft" | "sent" | "approved" | "rejected" | "expired"; total_amount: number; client_name: string; location_name: string; created_at?: string };
 type DetailRow = { quotation_id: string; client_name: string; location_name: string; address: string; latitude: number | null; longitude: number | null; quotation_date: string; valid_until: string | null; service_type: string; service_description: string; status: "draft" | "sent" | "approved" | "rejected" | "expired"; items: { description: string; quantity: number; price: number }[]; versions: { version: number; event: string; changed_at: string }[]; history: { from: "draft" | "sent" | "approved" | "rejected" | "expired" | null; to: "draft" | "sent" | "approved" | "rejected" | "expired"; comment: string | null; changed_at: string }[] };
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ team?: string }> }) {
